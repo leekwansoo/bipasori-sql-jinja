@@ -13,21 +13,19 @@
    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 
   <h4 class="ml-2 my-3 text-center", id = "user">서버에서 가져온 User 리스트 
-  <button>user</button></h4>
+  <button>user: {{users.name}}</button></h4>
 
   <div class="container">
     <table class="table" width="240">
         {% if users %}
-            {% for user in users %}
-                    <tr class="table__row" id="{{user.id}}">
-                        <td align="center"><input type="text" id = "userid_{{user.id}}" value = "{{user.id}}" /></td>
-                        <td align="center"><input type="text" id = "username_{{user.id}}" value = "{{user.name}}" /></td>
-                        <td align="center"><input type="text" id = "userage_{{user.id}}" value = "{{user.age}}" /></td>
-                        <td align="center"><a href="/user/{{user.id}}"><button>보기</button></a></td>
-                        <td align="center"><button class ="put" data-id = "{{user.id}}" >수정</button></a></td>
-                        <td align="center"><button class ="delete" id = delete data-id = "{{user.id}}" >삭제</button></td>
-                    </tr>   
-            {% endfor %}
+            
+                <tr class="table__row" id="{{users.id}}">
+                    <td align="center"><input type="number" id = "userid" value = "{{users.id}}" /></td>
+                    <td align="center"><input type="text" id = "username" value = "{{users.name}}" /></td>
+                    <td align="center"><input type="number" id = "userage" value = "{{users.age}}" /></td>
+                    <td align="center"><button class ="put" data-id = "{{users.id}}" >수정</button></a></td>
+                </tr>   
+        
         {% else %}
                     <tr>
                         <td align ="center" colspan="6">No user...</td>
@@ -35,35 +33,23 @@
         {% endif %}
   </table>
      
-  <button type="submit" class="btn btn-danger"><a class="nav-link" href="/upload">기록추가</a></button>
-  </div>
-
-  <script>
-    $('.delete').click(function(e){
-      console.log(e.target.dataset.id);
+   
+<script>
+    $('.put').click(function(e){
+      console.log(e.target.dataset);
       var id = e.target.dataset.id;
+      var name = e.target.dataset.name;
+      var age = $('#userage').value;
+      var data = {"id": id,
+                 "name": "kim10",
+                 "age" : 29,}
       $.ajax({
-        method : 'DELETE',
-        url : '/users/' + id,
+        method : 'PUT',
+        url : '/users/',
+        body: data
       }).done(function(결과){
         console.log('성공했어요')
       
-      }).fail(function(xhr,textStatus,errorThrown){
-        console.log(xhr,textStatus,errorThrown)
-      })
-    })
-    </script>
-
-<script>
-    $('.put').click(function(e){
-      console.log(e.target.dataset.id);
-      var id = e.target.dataset.id;
-      $.ajax({
-        method : 'GET',
-        url : '/update/'+ id,
-      }).done(function(결과){
-        console.log('성공했어요')
-             
       }).fail(function(xhr,textStatus,errorThrown){
         console.log(xhr,textStatus,errorThrown)
       })

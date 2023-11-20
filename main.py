@@ -5,11 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware # starlette.middleware depric
 from sql_db import session # mongo DB 에서의 collection 과 같은 기능이며 database 에 access 함
 from model import UserTable, User, Item # mongoDB dml model.py 와 동일 기능임(sql 지원을 위해 조금 더 복잡함)
 
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
 
 app = FastAPI()
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,7 +38,7 @@ def read_users(request: Request):
     context["request"] = request
     context["users"] = users
     context["headings"] = headings
-
+    print(context)
     return templates.TemplateResponse("user_list.html", context) 
 
 @app.get("/users/{user_id}", response_class = HTMLResponse)
@@ -44,11 +46,12 @@ def read_user(request: Request, user_id: int):
     context ={}
     user = session.query(UserTable).filter(UserTable.id == user_id).first()
     if not user: return{"msg":"no records found"}
-
-    context["name"] = user.name
-    context["age"] = user.age
-
-    return templates.TemplateResponse("user_list.html", context) 
+    #print(user.name, user.age)
+    context["request"] = request
+    context["users"] = user
+    context["headings"] = headings
+    print(context)
+    return templates.TemplateResponse("user_update.html", context) 
 
 @app.get("/upload")
 def root(request: Request):
@@ -68,16 +71,29 @@ def create_user(
     session.commit()
     return f"{name} created..."
 
+@app.get("/update/{user_id}")
+def root(request: Request, user_id: int):
+    context ={}
+    print(user_id)
+    user = session.query(UserTable).filter(UserTable.id == user_id)
+    print(user)
+    context["request"] = request
+    context["user_id"] = user_id
+    context["name"] = user.name
+    context["age"] = user.age
+    print(context)
+    return templates.TemplateResponse("user_update.html", context )
 
 @app.put("/users")
 def update_users(users: List[User]):
+    print(users)
     for i in users:
         user = session.query(UserTable).filter(UserTable.id == i.id).first()
+        print(user)
         user.name = i.name
         user.age = i.age
         session.commit()
     return f"{users[0].name} updated"
-
 
 @app.delete("/user/{user_id}")
 def delete_users(user_id: int):
